@@ -86,11 +86,14 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     self.logout()
                 elif request == 'message':
                     self.send_message(json_object)
+            else:
+                break
 
-                '''
-                This will make all Request handlers being called in its own thread.
-                Very important, otherwise only one client will be served at a time
-                '''
+        print 'Client disconnected @' + self.ip + ':' + str(self.port)
+    def finish(self):
+        if self.connection in self.server.clients:
+            del self.server.clients[self.connection]
+
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):

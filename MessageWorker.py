@@ -28,3 +28,5 @@ class ReceiveMessageWorker(threading.Thread):
             data = self.connection.recv(1024).strip()
             if data:
                 self.listener.message_received(data, self.connection)
+
+
