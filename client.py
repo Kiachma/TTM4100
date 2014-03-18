@@ -1,9 +1,6 @@
-'''
-KTN-project 2013 / 2014
-'''
-import socket
 from MessageWorker import ReceiveMessageWorker
 import json
+import socket
 
 
 class Client(object):
@@ -12,13 +9,16 @@ class Client(object):
 
     def start(self, host, port):
         self.connection.connect((host, port))
+
         server_thread = ReceiveMessageWorker(client, self.connection)
         server_thread.daemon = True
         server_thread.start()
-        print "Client receive thread :", server_thread.name
+
+        print "Client receive thread:", server_thread.name
 
     def message_received(self, message, connection):
-        response=json.loads(message)
+        response = json.loads(message)
+
         if response.get('error') is not None:
             print response.get('error')
         elif response.get('response') == 'login':
@@ -34,15 +34,18 @@ class Client(object):
         connection.close()
 
     def send(self, data):
-
-        if data.startswith("login"):
-            data = {'request': 'login', 'username': data.replace('login ', '')}
-        elif data.startswith("logout"):
+        if data.startswith("/login"):
+            try:
+                username = data.split()[1]
+            except IndexError:
+                username = ""
+            data = {'request': 'login', 'username': username}
+        elif data.startswith("/logout"):
             data = {'request': 'logout'}
         else:
             data = {'request': 'message', 'message': data}
-        self.connection.sendall(json.dumps(data))
 
+        self.connection.sendall(json.dumps(data))
 
     def force_disconnect(self):
         self.connection.close()
@@ -53,8 +56,10 @@ if __name__ == "__main__":
     client.start('localhost', 9999)
 
     while True:
-        message = raw_input('>> \r\n')
+        message = raw_input('>> ')
         client.send(message)
+        
         if message == '/quit':
             break
+
     client.force_disconnect()
